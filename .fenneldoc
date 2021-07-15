@@ -1,0 +1,33 @@
+;; -*- mode: fennel; -*- vi:ft=fennel
+;; Configuration file for Fenneldoc v0.1.6
+;; https://gitlab.com/andreyorst/fenneldoc
+
+{:fennel-path {}
+ :function-signatures true
+ :ignored-args-patterns ["%.%.%." "t" "k" "ks" "x" "%_"]
+ :inline-references "link"
+ :insert-comment true
+ :insert-copyright true
+ :insert-license true
+ :insert-version true
+ :keys {:copyright "_COPYRIGHT"
+        :description "_DESCRIPTION"
+        :doc-order "_DOC_ORDER"
+        :license "_LICENSE"
+        :module-name "_MODULE_NAME"
+        :version "_VERSION"}
+ :mode "checkdoc"
+ :order "alphabetic"
+ :project-copyright "Copyright (C) 2021 Andrey Listopadov"
+ :project-license "[MIT](https://gitlab.com/andreyorst/itable/-/raw/master/LICENSE)"
+ :project-version "v0.0.1"
+ :project-doc-order {:src/itable.fnl ["concat" "insert" "move" "pack" "remove" "sort" "unpack"
+                                      "eq" "deepcopy" "assoc" "assoc-in" "update" "update-in"
+                                      "keys" "vals" "group-by" "frequencies"
+                                      "first" "rest" "nthrest" "last" "butlast"
+                                      "join" "partition" "take" "drop"]}
+ :out-dir "./doc"
+ :sandbox true
+ :test-requirements {:src/itable.fnl "(require-macros :fennel-test.test)
+                                      (local itable (require :init))"}
+ :toc true}
