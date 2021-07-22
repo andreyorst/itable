@@ -79,7 +79,7 @@ local t2, v = itable.remove(t1, 2)
 ```
 
 In addition to the standard Lua set of functions from `table` module, `itable` provides a lot of extra functions for table manipulation.
-Descriptions, and examples can be found in the [docs](doc/itable.md)
+Descriptions, and examples can be found in the [docs](doc/src/itable.md)
 
 ### Note on the self reference
 
@@ -114,7 +114,7 @@ It's not strictly required to write Fennel unless you're submitting a merge requ
 
 ## Documentation
 
-The documentation is auto-generated with [Fenneldoc](https://gitlab.com/andreyorst/fenneldoc) and can be found [here](https://gitlab.com/andreyorst/itable/-/tree/master/doc).
+The documentation is auto-generated with [Fenneldoc](https://gitlab.com/andreyorst/fenneldoc) and can be found [here](https://gitlab.com/andreyorst/itable/-/blob/main/doc/src/itable.md).
 
 ## Contributing
 
