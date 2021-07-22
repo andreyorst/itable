@@ -4,19 +4,19 @@
 (deftest insert-test
   (testing "insert at the end by default"
     (assert-eq
-        [1 2 3 4]
-        (itable.insert [1 2 3] 4))
+     [1 2 3 4]
+     (itable.insert [1 2 3] 4))
     (assert-eq
-        [1 2 3 nil]
-        (itable.insert [1 2 3] nil)))
+     [1 2 3 nil]
+     (itable.insert [1 2 3] nil)))
 
   (testing "insert shifts elements"
     (assert-eq
-        [4 1 2 3]
-        (itable.insert [1 2 3] 1 4))
+     [4 1 2 3]
+     (itable.insert [1 2 3] 1 4))
     (assert-eq
-        [1 2 4 3]
-        (itable.insert [1 2 3] 3 4)))
+     [1 2 4 3]
+     (itable.insert [1 2 3] 3 4)))
 
   (testing "insert only works with numeric keys"
     (assert-not (pcall itable.insert [1 2 3] :a 10))
@@ -38,16 +38,16 @@
 (deftest remove-test
   (testing "remove at the end by default"
     (assert-eq
-        [[1 2 3] 4]
-        [(itable.remove [1 2 3 4])]))
+     [[1 2 3] 4]
+     [(itable.remove [1 2 3 4])]))
 
   (testing "remove shifts elements"
     (assert-eq
-        [2 3 4]
-        (itable.remove [1 2 3 4] 1))
+     [2 3 4]
+     (itable.remove [1 2 3 4] 1))
     (assert-eq
-        [1 2 4 5]
-        (itable.remove [1 2 3 4 5] 3 4)))
+     [1 2 4 5]
+     (itable.remove [1 2 3 4 5] 3 4)))
 
   (testing "remove only works with numeric keys"
     (assert-not (pcall itable.remove [1 2 3] :a 10))
@@ -69,7 +69,7 @@
 (deftest concat-test
   (testing "concat works on tables in the table"
     (assert-is (pcall itable.concat [[1]])
-      "concat must work on table values"))
+               "concat must work on table values"))
 
   (testing "concat accepts serialization function"
     (assert-eq "A,B,C"
@@ -109,6 +109,10 @@
       (assert-eq [2 1] t))))
 
 (deftest pack-test
+  (testing "pack returns correct size indication"
+    (assert-eq (itable.pack nil nil nil nil nil nil nil) {:n 7})
+    (assert-eq (itable.pack nil nil :a nil nil :b nil) {:n 7 3 :a 6 :b})
+    (assert-eq (itable.pack) {:n 0}))
   (testing "pack returns immutable table"
     (assert-not (pcall #(tset (itable.pack [3 2 1]) 1 0))
-      "pack must return immutable table")))
+                "pack must return immutable table")))

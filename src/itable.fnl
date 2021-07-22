@@ -94,6 +94,13 @@ Move elements from 3 to 5 to another table's end:
             (move start end tgt dest)
             immutable)))))
 
+;; portable table.pack implementation
+(fn ipack [...]
+  "Pack values into immutable table with size indication."
+  (-> [...]
+      (doto (tset :n (select :# ...)))
+      immutable))
+
 
 (fn iremove [t key]
   "Remove `key` from table, and return a new immutable table and value
@@ -520,9 +527,7 @@ Count each entry of a random letter:
            "Return new immutable table of sorted elements from `t`.  Optionally
 accepts sorting function `f`. "
            (-> t copy (doto (sort f)) immutable))
-   :pack (fn [...]
-           "Pack values into immutable table with size indication."
-           (-> ... pack immutable))
+   :pack ipack
    :unpack iunpack
    :concat iconcat
    :insert iinsert
