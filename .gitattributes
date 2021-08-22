@@ -1,6 +1,7 @@
 itable.lua linguist-generated
 
-*.fnl linguist-language=clojure
-*.fnl -linguist-detectable
+*.fnl gitlab-language=clojure
+.fenneldoc gitlab-language=clojure linguist-language=fennel
 
 fennel-test/test.fnl linguist-vendored
+.luacov linguist-vendored
