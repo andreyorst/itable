@@ -1,6 +1,3 @@
-(comment       ; At least Emacs users won't be able to edit `init.lua`
- -*- buffer-read-only: t -*-)
-
 (local {: pack
         : sort
         : concat
@@ -50,7 +47,8 @@ metamethods."
         __len #len
         __pairs #(values (fn [_ k] (next t k)) nil nil) ; avoid exposing closure via `pairs`
         __ipairs #(fn [_ k] (next t k)) ; Lua 5.2-5.3 compat
-        __call #(. t $2)]
+        __call #(. t $2)
+        __fennelview #($2 t $3 $4)]
     (setmetatable proxy
                   {:__index #(. t $2) ; avoid exposing closure via `debug.getmetatable`
                    :__newindex #(error (.. (tostring proxy) " is immutable") 2)
@@ -65,7 +63,8 @@ metamethods."
                    :__metatable {: __len
                                  : __pairs
                                  : __ipairs
-                                 : __call}})))
+                                 : __call
+                                 : __fennelview}})))
 
 ;;; Default functions
 

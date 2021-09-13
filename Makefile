@@ -20,7 +20,8 @@ build: $(LUASOURCES)
 ${LUASOURCES}: $(FNLSOURCES)
 
 %.lua: %.fnl
-	$(FENNEL) --lua $(LUA) $(COMPILEFLAGS) --compile $< > $@
+	echo "-- -*- buffer-read-only: t -*-" > $@
+	$(FENNEL) --lua $(LUA) $(COMPILEFLAGS) --compile $< >> $@
 
 clean:
 	rm -f $(LUASOURCES) $(LUATESTS)
