@@ -29,6 +29,9 @@
 - [`partition`](#partition)
 - [`take`](#take)
 - [`drop`](#drop)
+- [`pairs`](#pairs)
+- [`ipairs`](#ipairs)
+- [`length`](#length)
 
 ## `concat`
 Function signature:
@@ -519,6 +522,37 @@ Take doesn't modify original table:
 (assert-eq t1 [1 2 3 4 5])
 ```
 
+## `pairs`
+Function signature:
+
+```
+(pairs t)
+```
+
+A variant of `pairs` function that gets correct `__pairs` metamethod from `t`.
+
+Note, both [`pairs`](#pairs), [`ipairs`](#ipairs), and [`length`](#length) should only be needed on
+Lua 5.1 and LuaJIT where there's no direct support for such
+metamethods.
+
+## `ipairs`
+Function signature:
+
+```
+(ipairs t)
+```
+
+A variant of `ipairs` function that gets correct `__ipairs` metamethod from `t`.
+
+## `length`
+Function signature:
+
+```
+(length t)
+```
+
+A variant of `length` function that gets correct `__len` metamethod from `t`.
+
 
 ---
 
@@ -527,5 +561,5 @@ Copyright (C) 2021 Andrey Listopadov
 License: [MIT](https://gitlab.com/andreyorst/itable/-/raw/master/LICENSE)
 
 
-<!-- Generated with Fenneldoc v0.1.6
+<!-- Generated with Fenneldoc v0.1.7
      https://gitlab.com/andreyorst/fenneldoc -->

@@ -25,7 +25,7 @@
                                       "eq" "deepcopy" "assoc" "assoc-in" "update" "update-in"
                                       "keys" "vals" "group-by" "frequencies"
                                       "first" "rest" "nthrest" "last" "butlast"
-                                      "join" "partition" "take" "drop"]}
+                                      "join" "partition" "take" "drop" "pairs" "ipairs" "length"]}
  :out-dir "./doc"
  :sandbox true
  :test-requirements {:src/itable.fnl "(require-macros :fennel-test.test)
