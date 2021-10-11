@@ -1,6 +1,10 @@
 (require-macros :fennel-test.test)
 (local {: eq &as itable} (require :init))
 
+(fn fennelrest-supported? []
+  (let [[_ & x] (setmetatable [] {:__fennelrest #true})]
+    (= x true)))
+
 (deftest eq-test
   (testing "comparing base-types"
     (assert-is (itable.eq))
@@ -62,7 +66,13 @@
           i (itable t)]
       (tset t 1 1 0)
       (assert-is (eq [[0] 2 3] t))
-      (assert-is (eq [[0] 2 3] i)))))
+      (assert-is (eq [[0] 2 3] i))))
+  (if (fennelrest-supported?)
+      (testing "rest destructuring returns immutable table"
+        (let [[_ & i] (itable [1 2 3])]
+          (assert-not (pcall #(tset i 1 0))
+                      "rest destructuring must return immutable table")))
+      (io.stderr:write "INFO: skipping rest destructuring test")))
 
 
 (deftest assoc-test

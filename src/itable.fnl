@@ -7,8 +7,10 @@
   table)
 
 (local _unpack (or table.unpack _G.unpack))
+(local lua-pairs pairs)
+(local lua-ipairs ipairs)
 
-(fn mtpairs [t]
+(fn pairs [t]
   "A variant of `pairs` function that gets correct `__pairs` metamethod from `t`.
 
 Note, both `pairs', `ipairs', and `length' should only be needed on
@@ -16,15 +18,15 @@ Lua 5.1 and LuaJIT where there's no direct support for such
 metamethods."
   ((match (getmetatable t)
      {:__pairs p} p
-     _ pairs) t))
+     _ lua-pairs) t))
 
-(fn mtipairs [t]
+(fn ipairs [t]
   "A variant of `ipairs` function that gets correct `__ipairs` metamethod from `t`."
   ((match (getmetatable t)
      {:__ipairs i} i
-     _ ipairs) t))
+     _ lua-ipairs) t))
 
-(fn mtlength [t]
+(fn length* [t]
   "A variant of `length` function that gets correct `__len` metamethod from `t`."
   ((match (getmetatable t)
      {:__len l} l
@@ -34,7 +36,7 @@ metamethods."
   ;; Shallow copy the given table.  Intentionally returns mutable copy
   ;; with no metatable copied.
   (when t
-    (collect [k v (mtpairs t)]
+    (collect [k v (pairs t)]
       (values k v))))
 
 (fn immutable [t]
@@ -42,16 +44,19 @@ metamethods."
   ;; metamethod that ensures immutability.  `__pairs` metamethod
   ;; operates on a shallow copy, to prevent mutable table leaking.
   ;; Tables can be called with one argument to lookup keys.
-  (let [len (mtlength t)
+  (let [len (length* t)
         proxy {}
         __len #len
+        __index #(. t $2) ; avoid exposing closure via `debug.getmetatable`
+        __newindex #(error (.. (tostring proxy) " is immutable") 2)
         __pairs #(values (fn [_ k] (next t k)) nil nil) ; avoid exposing closure via `pairs`
         __ipairs #(fn [_ k] (next t k)) ; Lua 5.2-5.3 compat
         __call #(. t $2)
-        __fennelview #($2 t $3 $4)]
+        __fennelview #($2 t $3 $4)
+        __fennelrest #(immutable [(_unpack t $2)])]
     (setmetatable proxy
-                  {:__index #(. t $2) ; avoid exposing closure via `debug.getmetatable`
-                   :__newindex #(error (.. (tostring proxy) " is immutable") 2)
+                  {: __index
+                   : __newindex
                    : __len
                    : __pairs
                    : __ipairs
@@ -64,6 +69,7 @@ metamethods."
                                  : __pairs
                                  : __ipairs
                                  : __call
+                                 : __fennelrest
                                  : __fennelview}})))
 
 ;;; Default functions
@@ -177,7 +183,7 @@ If no serialization function is given, `tostring` is used.
 ```"
 
   (let [serializer (or serializer tostring)]
-    (concat (icollect [_ v (mtipairs t)]
+    (concat (icollect [_ v (ipairs t)]
               (serializer v opts)) sep start end)))
 
 
@@ -218,15 +224,15 @@ Deep comparison is used for tables:
         true
         (= (type ?a) (type ?b) :table)
         (do (var (res count-a count-b) (values true 0 0))
-            (each [k v (mtpairs ?a) :until (not res)]
+            (each [k v (pairs ?a) :until (not res)]
               (set res (eq v (do (var res nil)
-                                 (each [k* v (mtpairs ?b) :until res]
+                                 (each [k* v (pairs ?b) :until res]
                                    (when (eq k* k)
                                      (set res v)))
                                  res)))
               (set count-a (+ count-a 1)))
             (when res
-              (each [_ _ (mtpairs ?b)]
+              (each [_ _ (pairs ?b)]
                 (set count-b (+ count-b 1)))
               (set res (= count-a count-b)))
             res)
@@ -324,7 +330,7 @@ Copied table can't contain self references."
       :table (match (. seen x)
                true (error "immutable tables can't contain self reference" 2)
                _ (do (tset seen x true)
-                     (-> (collect [k v (mtpairs x)]
+                     (-> (collect [k v (pairs x)]
                            (values (deepcopy* k seen)
                                    (deepcopy* v seen)))
                          immutable)))
@@ -347,20 +353,20 @@ table."
   "Return all elements from `t` starting from `n`.  Returns immutable
 table."
   (let [t* []]
-    (for [i (+ n 1) (mtlength t)]
+    (for [i (+ n 1) (length* t)]
       (insert t* (. t i)))
     (immutable t*)))
 
 
 (fn last [t]
   "Return the last element from the table."
-  (. t (mtlength t)))
+  (. t (length* t)))
 
 
 (fn butlast [t]
   "Return all elements but the last one from the table as a new
 immutable table."
-  (pick-values 1 (iremove t (mtlength t))))
+  (pick-values 1 (iremove t (length* t))))
 
 
 (fn join [...]
@@ -383,7 +389,7 @@ immutable table."
     (1 ?t) (immutable (copy ?t))
     (2 ?t1 ?t2) (let [to (copy ?t1)
                       from (or ?t2 [])]
-                  (each [_ v (mtipairs from)]
+                  (each [_ v (ipairs from)]
                     (insert to v))
                   (immutable to))
     (_ ?t1 ?t2) (join (join ?t1 ?t2) (select 3 ...))))
@@ -465,11 +471,11 @@ Additional padding can be used to supply insufficient elements:
         (where (or (0) (1))) (error "wrong amount arguments to 'partition'")
         (2 ?n ?t) (partition* ?n ?n ?t)
         (3 ?n ?step ?t) (let [p (take ?n ?t)]
-                          (when (= ?n (mtlength p))
+                          (when (= ?n (length* p))
                             (insert res p)
                             (partition* ?n ?step [(_unpack ?t (+ ?step 1))])))
         (_ ?n ?step ?pad ?t) (let [p (take ?n ?t)]
-                               (if (= ?n (mtlength p))
+                               (if (= ?n (length* p))
                                    (do (insert res p)
                                        (partition* ?n ?step ?pad [(_unpack ?t (+ ?step 1))]))
                                    (insert res (take ?n (join p ?pad)))))))
@@ -479,13 +485,13 @@ Additional padding can be used to supply insufficient elements:
 
 (fn keys [t]
   "Return all keys from table `t` as an immutable table."
-  (-> (icollect [k _ (mtpairs t)] k)
+  (-> (icollect [k _ (pairs t)] k)
       immutable))
 
 
 (fn vals [t]
   "Return all values from table `t` as an immutable table."
-  (-> (icollect [_ v (mtpairs t)] v)
+  (-> (icollect [_ v (pairs t)] v)
       immutable))
 
 
@@ -517,14 +523,14 @@ Group rows by their date:
 ```"
   (let [res {}
         ungroupped []]
-    (each [_ v (mtpairs t)]
+    (each [_ v (pairs t)]
       (let [k (f v)]
         (if (not= nil k)
             (match (. res k)
               t* (insert t* v)
               _ (tset res k [v]))
             (insert ungroupped v))))
-    (values (-> (collect [k t (mtpairs res)]
+    (values (-> (collect [k t (pairs res)]
                   (values k (immutable t)))
                 immutable)
             (immutable ungroupped))))
@@ -546,7 +552,7 @@ Count each entry of a random letter:
               :strawberry 1}))
 ```"
   (let [res {}]
-    (each [_ v (mtpairs t)]
+    (each [_ v (pairs t)]
       (match (. res v)
         a (tset res v (+ a 1))
         _ (tset res v 1)))
@@ -565,9 +571,9 @@ accepts sorting function `f`. "
    :move imove
    :remove iremove
    ;; LuaJIT compat
-   :pairs mtpairs
-   :ipairs mtipairs
-   :length mtlength
+   :pairs pairs
+   :ipairs ipairs
+   :length length*
    ;; extras
    : eq
    : deepcopy

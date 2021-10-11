@@ -7,7 +7,9 @@ local remove = _local_1_["remove"]
 local move = _local_1_["move"]
 local insert = _local_1_["insert"]
 local _unpack = (table.unpack or _G.unpack)
-local function mtpairs(t)
+local lua_pairs = pairs
+local lua_ipairs = ipairs
+local function pairs(t)
   local _3_
   do
     local _2_ = getmetatable(t)
@@ -16,14 +18,14 @@ local function mtpairs(t)
       _3_ = p
     elseif true then
       local _ = _2_
-      _3_ = pairs
+      _3_ = lua_pairs
     else
       _3_ = nil
     end
   end
   return _3_(t)
 end
-local function mtipairs(t)
+local function ipairs(t)
   local _8_
   do
     local _7_ = getmetatable(t)
@@ -32,14 +34,14 @@ local function mtipairs(t)
       _8_ = i
     elseif true then
       local _ = _7_
-      _8_ = ipairs
+      _8_ = lua_ipairs
     else
       _8_ = nil
     end
   end
   return _8_(t)
 end
-local function mtlength(t)
+local function length_2a(t)
   local _13_
   do
     local _12_ = getmetatable(t)
@@ -60,76 +62,85 @@ local function mtlength(t)
 end
 local function copy(t)
   if t then
-    local tbl_10_auto = {}
-    for k, v in mtpairs(t) do
+    local tbl_11_auto = {}
+    for k, v in pairs(t) do
       local _19_, _20_ = k, v
       if ((nil ~= _19_) and (nil ~= _20_)) then
-        local k_11_auto = _19_
-        local v_12_auto = _20_
-        tbl_10_auto[k_11_auto] = v_12_auto
+        local k_12_auto = _19_
+        local v_13_auto = _20_
+        tbl_11_auto[k_12_auto] = v_13_auto
       else
       end
     end
-    return tbl_10_auto
+    return tbl_11_auto
   else
     return nil
   end
 end
 local function immutable(t)
-  local len = mtlength(t)
+  local len = length_2a(t)
   local proxy = {}
   local __len
   local function _23_()
     return len
   end
   __len = _23_
-  local __pairs
-  local function _24_()
-    local function _25_(_, k)
-      return next(t, k)
-    end
-    return _25_, nil, nil
+  local __index
+  local function _24_(_241, _242)
+    return t[_242]
   end
-  __pairs = _24_
-  local __ipairs
+  __index = _24_
+  local __newindex
+  local function _25_()
+    return error((tostring(proxy) .. " is immutable"), 2)
+  end
+  __newindex = _25_
+  local __pairs
   local function _26_()
     local function _27_(_, k)
       return next(t, k)
     end
-    return _27_
+    return _27_, nil, nil
   end
-  __ipairs = _26_
+  __pairs = _26_
+  local __ipairs
+  local function _28_()
+    local function _29_(_, k)
+      return next(t, k)
+    end
+    return _29_
+  end
+  __ipairs = _28_
   local __call
-  local function _28_(_241, _242)
-    return t[_242]
-  end
-  __call = _28_
-  local __fennelview
-  local function _29_(_241, _242, _243, _244)
-    return _242(t, _243, _244)
-  end
-  __fennelview = _29_
   local function _30_(_241, _242)
     return t[_242]
   end
-  local function _31_()
-    return error((tostring(proxy) .. " is immutable"), 2)
+  __call = _30_
+  local __fennelview
+  local function _31_(_241, _242, _243, _244)
+    return _242(t, _243, _244)
   end
-  return setmetatable(proxy, {__index = _30_, __newindex = _31_, __len = __len, __pairs = __pairs, __ipairs = __ipairs, __call = __call, __metatable = {__len = __len, __pairs = __pairs, __ipairs = __ipairs, __call = __call, __fennelview = __fennelview}})
+  __fennelview = _31_
+  local __fennelrest
+  local function _32_(_241, _242)
+    return immutable({_unpack(t, _242)})
+  end
+  __fennelrest = _32_
+  return setmetatable(proxy, {__index = __index, __newindex = __newindex, __len = __len, __pairs = __pairs, __ipairs = __ipairs, __call = __call, __metatable = {__len = __len, __pairs = __pairs, __ipairs = __ipairs, __call = __call, __fennelrest = __fennelrest, __fennelview = __fennelview}})
 end
 local function iinsert(t, ...)
   local t0 = copy(t)
   do
-    local _32_, _33_, _34_ = select("#", ...), ...
-    if (_32_ == 0) then
+    local _33_, _34_, _35_ = select("#", ...), ...
+    if (_33_ == 0) then
       error("wrong number of arguments to 'insert'")
-    elseif ((_32_ == 1) and true) then
-      local _3fv = _33_
+    elseif ((_33_ == 1) and true) then
+      local _3fv = _34_
       insert(t0, _3fv)
     elseif (true and true and true) then
-      local _ = _32_
-      local _3fk = _33_
-      local _3fv = _34_
+      local _ = _33_
+      local _3fk = _34_
+      local _3fv = _35_
       insert(t0, _3fk, _3fv)
     else
     end
@@ -138,22 +149,22 @@ local function iinsert(t, ...)
 end
 local imove
 if move then
-  local function _36_(src, start, _end, tgt, dest)
+  local function _37_(src, start, _end, tgt, dest)
     local src0 = copy(src)
     local dest0 = copy(dest)
     return immutable(move(src0, start, _end, tgt, dest0))
   end
-  imove = _36_
+  imove = _37_
 else
   imove = nil
 end
 local function ipack(...)
-  local function _39_(...)
-    local _38_ = {...}
-    _38_["n"] = select("#", ...)
-    return _38_
+  local function _40_(...)
+    local _39_ = {...}
+    _39_["n"] = select("#", ...)
+    return _39_
   end
-  return immutable(_39_(...))
+  return immutable(_40_(...))
 end
 local function iremove(t, key)
   local t0 = copy(t)
@@ -162,44 +173,50 @@ local function iremove(t, key)
 end
 local function iconcat(t, sep, start, _end, serializer, opts)
   local serializer0 = (serializer or tostring)
-  local _40_
+  local _41_
   do
-    local tbl_13_auto = {}
-    for _, v in mtipairs(t) do
-      tbl_13_auto[(#tbl_13_auto + 1)] = serializer0(v, opts)
+    local tbl_14_auto = {}
+    local i_15_auto = #tbl_14_auto
+    for _, v in ipairs(t) do
+      local val_16_auto = serializer0(v, opts)
+      if (nil ~= val_16_auto) then
+        i_15_auto = (i_15_auto + 1)
+        do end (tbl_14_auto)[i_15_auto] = val_16_auto
+      else
+      end
     end
-    _40_ = tbl_13_auto
+    _41_ = tbl_14_auto
   end
-  return concat(_40_, sep, start, _end)
+  return concat(_41_, sep, start, _end)
 end
 local function iunpack(t)
   return _unpack(copy(t))
 end
 local function eq(...)
-  local _41_, _42_, _43_ = select("#", ...), ...
-  local function _44_(...)
+  local _43_, _44_, _45_ = select("#", ...), ...
+  local function _46_(...)
     return true
   end
-  if ((_41_ == 0) and _44_(...)) then
+  if ((_43_ == 0) and _46_(...)) then
     return true
   else
-    local function _45_(...)
+    local function _47_(...)
       return true
     end
-    if ((_41_ == 1) and _45_(...)) then
+    if ((_43_ == 1) and _47_(...)) then
       return true
-    elseif ((_41_ == 2) and true and true) then
-      local _3fa = _42_
-      local _3fb = _43_
+    elseif ((_43_ == 2) and true and true) then
+      local _3fa = _44_
+      local _3fb = _45_
       if (_3fa == _3fb) then
         return true
-      elseif (function(_46_,_47_,_48_) return (_46_ == _47_) and (_47_ == _48_) end)(type(_3fa),type(_3fb),"table") then
+      elseif (function(_48_,_49_,_50_) return (_48_ == _49_) and (_49_ == _50_) end)(type(_3fa),type(_3fb),"table") then
         local res, count_a, count_b = true, 0, 0
-        for k, v in mtpairs(_3fa) do
+        for k, v in pairs(_3fa) do
           if not res then break end
-          local function _49_(...)
+          local function _51_(...)
             local res0 = nil
-            for k_2a, v0 in mtpairs(_3fb) do
+            for k_2a, v0 in pairs(_3fb) do
               if res0 then break end
               if eq(k_2a, k) then
                 res0 = v0
@@ -208,11 +225,11 @@ local function eq(...)
             end
             return res0
           end
-          res = eq(v, _49_(...))
+          res = eq(v, _51_(...))
           count_a = (count_a + 1)
         end
         if res then
-          for _, _0 in mtpairs(_3fb) do
+          for _, _0 in pairs(_3fb) do
             count_b = (count_b + 1)
           end
           res = (count_a == count_b)
@@ -223,9 +240,9 @@ local function eq(...)
         return false
       end
     elseif (true and true and true) then
-      local _ = _41_
-      local _3fa = _42_
-      local _3fb = _43_
+      local _ = _43_
+      local _3fa = _44_
+      local _3fb = _45_
       return (eq(_3fa, _3fb) and eq(select(2, ...)))
     else
       return nil
@@ -233,17 +250,17 @@ local function eq(...)
   end
 end
 local function assoc(t, key, val)
-  local function _55_()
-    local _54_ = copy(t)
-    do end (_54_)[key] = val
-    return _54_
+  local function _57_()
+    local _56_ = copy(t)
+    do end (_56_)[key] = val
+    return _56_
   end
-  return immutable(_55_())
+  return immutable(_57_())
 end
-local function assoc_in(t, _56_, val)
-  local _arg_57_ = _56_
-  local k = _arg_57_[1]
-  local ks = {(table.unpack or unpack)(_arg_57_, 2)}
+local function assoc_in(t, _58_, val)
+  local _arg_59_ = _58_
+  local k = _arg_59_[1]
+  local ks = (getmetatable(_arg_59_) and getmetatable(_arg_59_).__fennelrest and getmetatable(_arg_59_).__fennelrest(_arg_59_, 2)) or {(table.unpack or unpack)(_arg_59_, 2)}
   local t0 = (t or {})
   if next(ks) then
     return assoc(t0, k, assoc_in(((t0)[k] or {}), ks, val))
@@ -252,17 +269,17 @@ local function assoc_in(t, _56_, val)
   end
 end
 local function update(t, key, f)
-  local function _60_()
-    local _59_ = copy(t)
-    do end (_59_)[key] = f(t[key])
-    return _59_
+  local function _62_()
+    local _61_ = copy(t)
+    do end (_61_)[key] = f(t[key])
+    return _61_
   end
-  return immutable(_60_())
+  return immutable(_62_())
 end
-local function update_in(t, _61_, f)
-  local _arg_62_ = _61_
-  local k = _arg_62_[1]
-  local ks = {(table.unpack or unpack)(_arg_62_, 2)}
+local function update_in(t, _63_, f)
+  local _arg_64_ = _63_
+  local k = _arg_64_[1]
+  local ks = (getmetatable(_arg_64_) and getmetatable(_arg_64_).__fennelrest and getmetatable(_arg_64_).__fennelrest(_arg_64_, 2)) or {(table.unpack or unpack)(_arg_64_, 2)}
   local t0 = (t or {})
   if next(ks) then
     return assoc(t0, k, update_in((t0)[k], ks, f))
@@ -272,33 +289,33 @@ local function update_in(t, _61_, f)
 end
 local function deepcopy(x)
   local function deepcopy_2a(x0, seen)
-    local _64_ = type(x0)
-    if (_64_ == "table") then
-      local _65_ = seen[x0]
-      if (_65_ == true) then
+    local _66_ = type(x0)
+    if (_66_ == "table") then
+      local _67_ = seen[x0]
+      if (_67_ == true) then
         return error("immutable tables can't contain self reference", 2)
       elseif true then
-        local _ = _65_
+        local _ = _67_
         seen[x0] = true
-        local function _66_()
-          local tbl_10_auto = {}
-          for k, v in mtpairs(x0) do
-            local _67_, _68_ = deepcopy_2a(k, seen), deepcopy_2a(v, seen)
-            if ((nil ~= _67_) and (nil ~= _68_)) then
-              local k_11_auto = _67_
-              local v_12_auto = _68_
-              tbl_10_auto[k_11_auto] = v_12_auto
+        local function _68_()
+          local tbl_11_auto = {}
+          for k, v in pairs(x0) do
+            local _69_, _70_ = deepcopy_2a(k, seen), deepcopy_2a(v, seen)
+            if ((nil ~= _69_) and (nil ~= _70_)) then
+              local k_12_auto = _69_
+              local v_13_auto = _70_
+              tbl_11_auto[k_12_auto] = v_13_auto
             else
             end
           end
-          return tbl_10_auto
+          return tbl_11_auto
         end
-        return immutable(_66_())
+        return immutable(_68_())
       else
         return nil
       end
     elseif true then
-      local _ = _64_
+      local _ = _66_
       return x0
     else
       return nil
@@ -306,49 +323,49 @@ local function deepcopy(x)
   end
   return deepcopy_2a(x, {})
 end
-local function first(_72_)
-  local _arg_73_ = _72_
-  local x = _arg_73_[1]
+local function first(_74_)
+  local _arg_75_ = _74_
+  local x = _arg_75_[1]
   return x
 end
 local function rest(t)
-  local _74_ = iremove(t, 1)
-  return _74_
+  local _76_ = iremove(t, 1)
+  return _76_
 end
 local function nthrest(t, n)
   local t_2a = {}
-  for i = (n + 1), mtlength(t) do
+  for i = (n + 1), length_2a(t) do
     insert(t_2a, t[i])
   end
   return immutable(t_2a)
 end
 local function last(t)
-  return t[mtlength(t)]
+  return t[length_2a(t)]
 end
 local function butlast(t)
-  local _75_ = iremove(t, mtlength(t))
-  return _75_
+  local _77_ = iremove(t, length_2a(t))
+  return _77_
 end
 local function join(...)
-  local _76_, _77_, _78_ = select("#", ...), ...
-  if (_76_ == 0) then
+  local _78_, _79_, _80_ = select("#", ...), ...
+  if (_78_ == 0) then
     return nil
-  elseif ((_76_ == 1) and true) then
-    local _3ft = _77_
+  elseif ((_78_ == 1) and true) then
+    local _3ft = _79_
     return immutable(copy(_3ft))
-  elseif ((_76_ == 2) and true and true) then
-    local _3ft1 = _77_
-    local _3ft2 = _78_
+  elseif ((_78_ == 2) and true and true) then
+    local _3ft1 = _79_
+    local _3ft2 = _80_
     local to = copy(_3ft1)
     local from = (_3ft2 or {})
-    for _, v in mtipairs(from) do
+    for _, v in ipairs(from) do
       insert(to, v)
     end
     return immutable(to)
   elseif (true and true and true) then
-    local _ = _76_
-    local _3ft1 = _77_
-    local _3ft2 = _78_
+    local _ = _78_
+    local _3ft1 = _79_
+    local _3ft2 = _80_
     return join(join(_3ft1, _3ft2), select(3, ...))
   else
     return nil
@@ -367,41 +384,41 @@ end
 local function partition(...)
   local res = {}
   local function partition_2a(...)
-    local _80_, _81_, _82_, _83_, _84_ = select("#", ...), ...
-    local function _85_(...)
+    local _82_, _83_, _84_, _85_, _86_ = select("#", ...), ...
+    local function _87_(...)
       return true
     end
-    if ((_80_ == 0) and _85_(...)) then
+    if ((_82_ == 0) and _87_(...)) then
       return error("wrong amount arguments to 'partition'")
     else
-      local function _86_(...)
+      local function _88_(...)
         return true
       end
-      if ((_80_ == 1) and _86_(...)) then
+      if ((_82_ == 1) and _88_(...)) then
         return error("wrong amount arguments to 'partition'")
-      elseif ((_80_ == 2) and true and true) then
-        local _3fn = _81_
-        local _3ft = _82_
+      elseif ((_82_ == 2) and true and true) then
+        local _3fn = _83_
+        local _3ft = _84_
         return partition_2a(_3fn, _3fn, _3ft)
-      elseif ((_80_ == 3) and true and true and true) then
-        local _3fn = _81_
-        local _3fstep = _82_
-        local _3ft = _83_
+      elseif ((_82_ == 3) and true and true and true) then
+        local _3fn = _83_
+        local _3fstep = _84_
+        local _3ft = _85_
         local p = take(_3fn, _3ft)
-        if (_3fn == mtlength(p)) then
+        if (_3fn == length_2a(p)) then
           insert(res, p)
           return partition_2a(_3fn, _3fstep, {_unpack(_3ft, (_3fstep + 1))})
         else
           return nil
         end
       elseif (true and true and true and true and true) then
-        local _ = _80_
-        local _3fn = _81_
-        local _3fstep = _82_
-        local _3fpad = _83_
-        local _3ft = _84_
+        local _ = _82_
+        local _3fn = _83_
+        local _3fstep = _84_
+        local _3fpad = _85_
+        local _3ft = _86_
         local p = take(_3fn, _3ft)
-        if (_3fn == mtlength(p)) then
+        if (_3fn == length_2a(p)) then
           insert(res, p)
           return partition_2a(_3fn, _3fstep, _3fpad, {_unpack(_3ft, (_3fstep + 1))})
         else
@@ -416,37 +433,49 @@ local function partition(...)
   return immutable(res)
 end
 local function keys(t)
-  local function _90_()
-    local tbl_13_auto = {}
-    for k, _ in mtpairs(t) do
-      tbl_13_auto[(#tbl_13_auto + 1)] = k
+  local function _92_()
+    local tbl_14_auto = {}
+    local i_15_auto = #tbl_14_auto
+    for k, _ in pairs(t) do
+      local val_16_auto = k
+      if (nil ~= val_16_auto) then
+        i_15_auto = (i_15_auto + 1)
+        do end (tbl_14_auto)[i_15_auto] = val_16_auto
+      else
+      end
     end
-    return tbl_13_auto
+    return tbl_14_auto
   end
-  return immutable(_90_())
+  return immutable(_92_())
 end
 local function vals(t)
-  local function _91_()
-    local tbl_13_auto = {}
-    for _, v in mtpairs(t) do
-      tbl_13_auto[(#tbl_13_auto + 1)] = v
+  local function _94_()
+    local tbl_14_auto = {}
+    local i_15_auto = #tbl_14_auto
+    for _, v in pairs(t) do
+      local val_16_auto = v
+      if (nil ~= val_16_auto) then
+        i_15_auto = (i_15_auto + 1)
+        do end (tbl_14_auto)[i_15_auto] = val_16_auto
+      else
+      end
     end
-    return tbl_13_auto
+    return tbl_14_auto
   end
-  return immutable(_91_())
+  return immutable(_94_())
 end
 local function group_by(f, t)
   local res = {}
   local ungroupped = {}
-  for _, v in mtpairs(t) do
+  for _, v in pairs(t) do
     local k = f(v)
     if (nil ~= k) then
-      local _92_ = res[k]
-      if (nil ~= _92_) then
-        local t_2a = _92_
+      local _96_ = res[k]
+      if (nil ~= _96_) then
+        local t_2a = _96_
         insert(t_2a, v)
       elseif true then
-        local _0 = _92_
+        local _0 = _96_
         res[k] = {v}
       else
       end
@@ -454,30 +483,30 @@ local function group_by(f, t)
       insert(ungroupped, v)
     end
   end
-  local function _95_()
-    local tbl_10_auto = {}
-    for k, t0 in mtpairs(res) do
-      local _96_, _97_ = k, immutable(t0)
-      if ((nil ~= _96_) and (nil ~= _97_)) then
-        local k_11_auto = _96_
-        local v_12_auto = _97_
-        tbl_10_auto[k_11_auto] = v_12_auto
+  local function _99_()
+    local tbl_11_auto = {}
+    for k, t0 in pairs(res) do
+      local _100_, _101_ = k, immutable(t0)
+      if ((nil ~= _100_) and (nil ~= _101_)) then
+        local k_12_auto = _100_
+        local v_13_auto = _101_
+        tbl_11_auto[k_12_auto] = v_13_auto
       else
       end
     end
-    return tbl_10_auto
+    return tbl_11_auto
   end
-  return immutable(_95_()), immutable(ungroupped)
+  return immutable(_99_()), immutable(ungroupped)
 end
 local function frequencies(t)
   local res = {}
-  for _, v in mtpairs(t) do
-    local _99_ = res[v]
-    if (nil ~= _99_) then
-      local a = _99_
+  for _, v in pairs(t) do
+    local _103_ = res[v]
+    if (nil ~= _103_) then
+      local a = _103_
       res[v] = (a + 1)
     elseif true then
-      local _0 = _99_
+      local _0 = _103_
       res[v] = 1
     else
     end
@@ -485,16 +514,16 @@ local function frequencies(t)
   return immutable(res)
 end
 local itable
-local function _101_(t, f)
-  local function _103_()
-    local _102_ = copy(t)
-    sort(_102_, f)
-    return _102_
+local function _105_(t, f)
+  local function _107_()
+    local _106_ = copy(t)
+    sort(_106_, f)
+    return _106_
   end
-  return immutable(_103_())
+  return immutable(_107_())
 end
-itable = {sort = _101_, pack = ipack, unpack = iunpack, concat = iconcat, insert = iinsert, move = imove, remove = iremove, pairs = mtpairs, ipairs = mtipairs, length = mtlength, eq = eq, deepcopy = deepcopy, assoc = assoc, ["assoc-in"] = assoc_in, update = update, ["update-in"] = update_in, keys = keys, vals = vals, ["group-by"] = group_by, frequencies = frequencies, first = first, rest = rest, nthrest = nthrest, last = last, butlast = butlast, join = join, partition = partition, take = take, drop = drop}
-local function _104_(_241, _242)
+itable = {sort = _105_, pack = ipack, unpack = iunpack, concat = iconcat, insert = iinsert, move = imove, remove = iremove, pairs = pairs, ipairs = ipairs, length = length_2a, eq = eq, deepcopy = deepcopy, assoc = assoc, ["assoc-in"] = assoc_in, update = update, ["update-in"] = update_in, keys = keys, vals = vals, ["group-by"] = group_by, frequencies = frequencies, first = first, rest = rest, nthrest = nthrest, last = last, butlast = butlast, join = join, partition = partition, take = take, drop = drop}
+local function _108_(_241, _242)
   return immutable(copy(_242))
 end
-return setmetatable(itable, {__call = _104_, __index = {_MODULE_NAME = "itable", _DESCRIPTION = "`itable` - immutable tables for Lua runtime."}})
+return setmetatable(itable, {__call = _108_, __index = {_MODULE_NAME = "itable", _DESCRIPTION = "`itable` - immutable tables for Lua runtime."}})

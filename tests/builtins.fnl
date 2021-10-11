@@ -3,20 +3,20 @@
 
 (deftest insert-test
   (testing "insert at the end by default"
-           (assert-is (eq
-                       [1 2 3 4]
-                       (itable.insert [1 2 3] 4)))
-           (assert-is (eq
-                       [1 2 3 nil]
-                       (itable.insert [1 2 3] nil))))
+    (assert-is (eq
+                [1 2 3 4]
+                (itable.insert [1 2 3] 4)))
+    (assert-is (eq
+                [1 2 3 nil]
+                (itable.insert [1 2 3] nil))))
 
   (testing "insert shifts elements"
-           (assert-is (eq
-                       [4 1 2 3]
-                       (itable.insert [1 2 3] 1 4)))
-           (assert-is (eq
-                       [1 2 4 3]
-                       (itable.insert [1 2 3] 3 4))))
+    (assert-is (eq
+                [4 1 2 3]
+                (itable.insert [1 2 3] 1 4)))
+    (assert-is (eq
+                [1 2 4 3]
+                (itable.insert [1 2 3] 3 4))))
 
   (testing "insert only works with numeric keys"
     (assert-not (pcall itable.insert [1 2 3] :a 10))
@@ -37,17 +37,17 @@
 
 (deftest remove-test
   (testing "remove at the end by default"
-           (assert-is (eq
-                       [[1 2 3] 4]
-                       [(itable.remove [1 2 3 4])])))
+    (assert-is (eq
+                [[1 2 3] 4]
+                [(itable.remove [1 2 3 4])])))
 
   (testing "remove shifts elements"
-           (assert-is (eq
-                       (itable.remove [1 2 3 4] 1)
-                       [2 3 4]))
-           (assert-is (eq
-                       (itable.remove [1 2 3 4 5] 3 4)
-                       [1 2 4 5])))
+    (assert-is (eq
+                (itable.remove [1 2 3 4] 1)
+                [2 3 4]))
+    (assert-is (eq
+                (itable.remove [1 2 3 4 5] 3 4)
+                [1 2 4 5])))
 
   (testing "remove only works with numeric keys"
     (assert-not (pcall itable.remove [1 2 3] :a 10))
@@ -72,14 +72,14 @@
                "concat must work on table values"))
 
   (testing "concat accepts serialization function"
-           (assert-is (eq "A,B,C"
-                          (itable.concat [:a :b :c] "," 1 3 #(string.upper $)))))
+    (assert-is (eq "A,B,C"
+                   (itable.concat [:a :b :c] "," 1 3 #(string.upper $)))))
 
   (testing "concat accepts serialization function and options"
-           (assert-is (eq "a,b,c"
-                          (itable.concat [:A :B :C] "," 1 3
-                                         #(if (. $2 :upper?) (string.upper $) (string.lower $))
-                                         {:upper? false})))))
+    (assert-is (eq "a,b,c"
+                   (itable.concat [:A :B :C] "," 1 3
+                                  #(if (. $2 :upper?) (string.upper $) (string.lower $))
+                                  {:upper? false})))))
 
 (when itable.move
   (deftest move-test
@@ -101,7 +101,7 @@
     (assert-not (pcall #(tset (itable.sort [3 2 1]) 1 0))
                 "sort must return immutable table"))
   (testing "sort table"
-           (assert-is (eq [1 2] (itable.sort [2 1]))))
+    (assert-is (eq [1 2] (itable.sort [2 1]))))
 
   (testing "sort doesn't modify original table"
     (let [t [2 1]]
@@ -110,9 +110,9 @@
 
 (deftest pack-test
   (testing "pack returns correct size indication"
-           (assert-is (eq (itable.pack nil nil nil nil nil nil nil) {:n 7}))
-           (assert-is (eq (itable.pack nil nil :a nil nil :b nil) {:n 7 3 :a 6 :b}))
-           (assert-is (eq (itable.pack) {:n 0})))
+    (assert-is (eq (itable.pack nil nil nil nil nil nil nil) {:n 7}))
+    (assert-is (eq (itable.pack nil nil :a nil nil :b nil) {:n 7 3 :a 6 :b}))
+    (assert-is (eq (itable.pack) {:n 0})))
   (testing "pack returns immutable table"
     (assert-not (pcall #(tset (itable.pack [3 2 1]) 1 0))
                 "pack must return immutable table")))
