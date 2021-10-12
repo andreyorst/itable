@@ -1,12 +1,12 @@
-(local {: pack
-        : sort
-        : concat
-        : remove
-        : move
-        : insert}
+(local {:pack table-pack
+        :sort table-sort
+        :concat table-concat
+        :remove table-remove
+        :move table-move
+        :insert table-insert}
   table)
 
-(local _unpack (or table.unpack _G.unpack))
+(local table-unpack (or table.unpack _G.unpack))
 (local lua-pairs pairs)
 (local lua-ipairs ipairs)
 
@@ -53,7 +53,7 @@ metamethods."
         __ipairs #(fn [_ k] (next t k)) ; Lua 5.2-5.3 compat
         __call #(. t $2)
         __fennelview #($2 t $3 $4)
-        __fennelrest #(immutable [(_unpack t $2)])]
+        __fennelrest #(immutable [(table-unpack t $2)])]
     (setmetatable proxy
                   {: __index
                    : __newindex
@@ -74,7 +74,7 @@ metamethods."
 
 ;;; Default functions
 
-(fn iinsert [t ...]
+(fn insert [t ...]
   "Inserts element at position `pos` into sequential table,
 shifting up the elements.  The default value for `pos` is table length
 plus 1, so that a call with just two arguments will insert the value
@@ -100,13 +100,13 @@ New table is immutable:
   (let [t (copy t)]
     (match (values (select :# ...) ...)
       (0) (error "wrong number of arguments to 'insert'")
-      (1 ?v) (insert t ?v)
-      (_ ?k ?v) (insert t ?k ?v))
+      (1 ?v) (table-insert t ?v)
+      (_ ?k ?v) (table-insert t ?k ?v))
     (immutable t)))
 
 
-(local imove
-  (when move
+(local move
+  (when table-move
     (fn [src start end tgt dest]
       "Move elements from `src` table to `dest` starting at `start` to `end`,
 placing elements from `tgt` and up.  The default for `dest` is `src`.
@@ -128,18 +128,18 @@ Move elements from 3 to 5 to another table's end:
       (let [src (copy src)
             dest (copy dest)]
         (-> src
-            (move start end tgt dest)
+            (table-move start end tgt dest)
             immutable)))))
 
 ;; portable table.pack implementation
-(fn ipack [...]
+(fn pack [...]
   "Pack values into immutable table with size indication."
   (-> [...]
       (doto (tset :n (select :# ...)))
       immutable))
 
 
-(fn iremove [t key]
+(fn remove [t key]
   "Remove `key` from table, and return a new immutable table and value
 that was associated with the `key`.
 
@@ -163,11 +163,11 @@ The newly produced table is immutable:
 (assert-not (pcall table.insert (itable.remove [1 2 3])))
 ```"
   (let [t (copy t)
-        v (remove t key)]
+        v (table-remove t key)]
     (values (immutable t) v)))
 
 
-(fn iconcat [t sep start end serializer opts]
+(fn concat [t sep start end serializer opts]
   "Concatenate each element of sequential table with separator `sep`.
 
 Optionally supports `start` and `end` indexes, and a `serializer`
@@ -183,16 +183,16 @@ If no serialization function is given, `tostring` is used.
 ```"
 
   (let [serializer (or serializer tostring)]
-    (concat (icollect [_ v (ipairs t)]
-              (serializer v opts)) sep start end)))
+    (table-concat (icollect [_ v (ipairs t)]
+                    (serializer v opts)) sep start end)))
 
 
-(fn iunpack [t]
+(fn unpack [t]
   "Unpack immutable table.
 
 Note, that this is needed only in LuaJit and Lua 5.2, because of how
 metamethods work."
-  (_unpack (copy t)))
+  (table-unpack (copy t)))
 
 
 ;;; Extras
@@ -346,7 +346,7 @@ Copied table can't contain self references."
 (fn rest [t]
   "Return all but the first elements from the table `t` as a new immutable
 table."
-  (pick-values 1 (iremove t 1)))
+  (pick-values 1 (remove t 1)))
 
 
 (fn nthrest [t n]
@@ -354,7 +354,7 @@ table."
 table."
   (let [t* []]
     (for [i (+ n 1) (length* t)]
-      (insert t* (. t i)))
+      (table-insert t* (. t i)))
     (immutable t*)))
 
 
@@ -366,7 +366,7 @@ table."
 (fn butlast [t]
   "Return all elements but the last one from the table as a new
 immutable table."
-  (pick-values 1 (iremove t (length* t))))
+  (pick-values 1 (remove t (length* t))))
 
 
 (fn join [...]
@@ -390,7 +390,7 @@ immutable table."
     (2 ?t1 ?t2) (let [to (copy ?t1)
                       from (or ?t2 [])]
                   (each [_ v (ipairs from)]
-                    (insert to v))
+                    (table-insert to v))
                   (immutable to))
     (_ ?t1 ?t2) (join (join ?t1 ?t2) (select 3 ...))))
 
@@ -411,7 +411,7 @@ Take doesn't modify original table:
 ```"
   (let [t* []]
     (for [i 1 n]
-      (insert t* (. t i)))
+      (table-insert t* (. t i)))
     (immutable t*)))
 
 
@@ -472,13 +472,13 @@ Additional padding can be used to supply insufficient elements:
         (2 ?n ?t) (partition* ?n ?n ?t)
         (3 ?n ?step ?t) (let [p (take ?n ?t)]
                           (when (= ?n (length* p))
-                            (insert res p)
-                            (partition* ?n ?step [(_unpack ?t (+ ?step 1))])))
+                            (table-insert res p)
+                            (partition* ?n ?step [(table-unpack ?t (+ ?step 1))])))
         (_ ?n ?step ?pad ?t) (let [p (take ?n ?t)]
                                (if (= ?n (length* p))
-                                   (do (insert res p)
-                                       (partition* ?n ?step ?pad [(_unpack ?t (+ ?step 1))]))
-                                   (insert res (take ?n (join p ?pad)))))))
+                                   (do (table-insert res p)
+                                       (partition* ?n ?step ?pad [(table-unpack ?t (+ ?step 1))]))
+                                   (table-insert res (take ?n (join p ?pad)))))))
     (partition* ...)
     (immutable res)))
 
@@ -527,9 +527,9 @@ Group rows by their date:
       (let [k (f v)]
         (if (not= nil k)
             (match (. res k)
-              t* (insert t* v)
+              t* (table-insert t* v)
               _ (tset res k [v]))
-            (insert ungroupped v))))
+            (table-insert ungroupped v))))
     (values (-> (collect [k t (pairs res)]
                   (values k (immutable t)))
                 immutable)
@@ -563,16 +563,16 @@ Count each entry of a random letter:
   {:sort (fn [t f]
            "Return new immutable table of sorted elements from `t`.  Optionally
 accepts sorting function `f`. "
-           (-> t copy (doto (sort f)) immutable))
-   :pack ipack
-   :unpack iunpack
-   :concat iconcat
-   :insert iinsert
-   :move imove
-   :remove iremove
+           (-> t copy (doto (table-sort f)) immutable))
+   : pack
+   : unpack
+   : concat
+   : insert
+   : move
+   : remove
    ;; LuaJIT compat
-   :pairs pairs
-   :ipairs ipairs
+   : pairs
+   : ipairs
    :length length*
    ;; extras
    : eq

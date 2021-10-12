@@ -1,12 +1,12 @@
 -- -*- buffer-read-only: t -*-
 local _local_1_ = table
-local pack = _local_1_["pack"]
-local sort = _local_1_["sort"]
-local concat = _local_1_["concat"]
-local remove = _local_1_["remove"]
-local move = _local_1_["move"]
-local insert = _local_1_["insert"]
-local _unpack = (table.unpack or _G.unpack)
+local table_pack = _local_1_["pack"]
+local table_sort = _local_1_["sort"]
+local table_concat = _local_1_["concat"]
+local table_remove = _local_1_["remove"]
+local table_move = _local_1_["move"]
+local table_insert = _local_1_["insert"]
+local table_unpack = (table.unpack or _G.unpack)
 local lua_pairs = pairs
 local lua_ipairs = ipairs
 local function pairs(t)
@@ -123,12 +123,12 @@ local function immutable(t)
   __fennelview = _31_
   local __fennelrest
   local function _32_(_241, _242)
-    return immutable({_unpack(t, _242)})
+    return immutable({table_unpack(t, _242)})
   end
   __fennelrest = _32_
   return setmetatable(proxy, {__index = __index, __newindex = __newindex, __len = __len, __pairs = __pairs, __ipairs = __ipairs, __call = __call, __metatable = {__len = __len, __pairs = __pairs, __ipairs = __ipairs, __call = __call, __fennelrest = __fennelrest, __fennelview = __fennelview}})
 end
-local function iinsert(t, ...)
+local function insert(t, ...)
   local t0 = copy(t)
   do
     local _33_, _34_, _35_ = select("#", ...), ...
@@ -136,29 +136,29 @@ local function iinsert(t, ...)
       error("wrong number of arguments to 'insert'")
     elseif ((_33_ == 1) and true) then
       local _3fv = _34_
-      insert(t0, _3fv)
+      table_insert(t0, _3fv)
     elseif (true and true and true) then
       local _ = _33_
       local _3fk = _34_
       local _3fv = _35_
-      insert(t0, _3fk, _3fv)
+      table_insert(t0, _3fk, _3fv)
     else
     end
   end
   return immutable(t0)
 end
-local imove
-if move then
+local move
+if table_move then
   local function _37_(src, start, _end, tgt, dest)
     local src0 = copy(src)
     local dest0 = copy(dest)
-    return immutable(move(src0, start, _end, tgt, dest0))
+    return immutable(table_move(src0, start, _end, tgt, dest0))
   end
-  imove = _37_
+  move = _37_
 else
-  imove = nil
+  move = nil
 end
-local function ipack(...)
+local function pack(...)
   local function _40_(...)
     local _39_ = {...}
     _39_["n"] = select("#", ...)
@@ -166,12 +166,12 @@ local function ipack(...)
   end
   return immutable(_40_(...))
 end
-local function iremove(t, key)
+local function remove(t, key)
   local t0 = copy(t)
-  local v = remove(t0, key)
+  local v = table_remove(t0, key)
   return immutable(t0), v
 end
-local function iconcat(t, sep, start, _end, serializer, opts)
+local function concat(t, sep, start, _end, serializer, opts)
   local serializer0 = (serializer or tostring)
   local _41_
   do
@@ -187,10 +187,10 @@ local function iconcat(t, sep, start, _end, serializer, opts)
     end
     _41_ = tbl_14_auto
   end
-  return concat(_41_, sep, start, _end)
+  return table_concat(_41_, sep, start, _end)
 end
-local function iunpack(t)
-  return _unpack(copy(t))
+local function unpack(t)
+  return table_unpack(copy(t))
 end
 local function eq(...)
   local _43_, _44_, _45_ = select("#", ...), ...
@@ -260,7 +260,7 @@ end
 local function assoc_in(t, _58_, val)
   local _arg_59_ = _58_
   local k = _arg_59_[1]
-  local ks = (getmetatable(_arg_59_) and getmetatable(_arg_59_).__fennelrest and getmetatable(_arg_59_).__fennelrest(_arg_59_, 2)) or {(table.unpack or unpack)(_arg_59_, 2)}
+  local ks = (function (t, k) local mt = getmetatable(t) if "table" == type(mt) and mt.__fennelrest then return mt.__fennelrest(t, k) else return {(table.unpack or unpack)(t, k)} end end)(_arg_59_, 2)
   local t0 = (t or {})
   if next(ks) then
     return assoc(t0, k, assoc_in(((t0)[k] or {}), ks, val))
@@ -279,7 +279,7 @@ end
 local function update_in(t, _63_, f)
   local _arg_64_ = _63_
   local k = _arg_64_[1]
-  local ks = (getmetatable(_arg_64_) and getmetatable(_arg_64_).__fennelrest and getmetatable(_arg_64_).__fennelrest(_arg_64_, 2)) or {(table.unpack or unpack)(_arg_64_, 2)}
+  local ks = (function (t, k) local mt = getmetatable(t) if "table" == type(mt) and mt.__fennelrest then return mt.__fennelrest(t, k) else return {(table.unpack or unpack)(t, k)} end end)(_arg_64_, 2)
   local t0 = (t or {})
   if next(ks) then
     return assoc(t0, k, update_in((t0)[k], ks, f))
@@ -329,13 +329,13 @@ local function first(_74_)
   return x
 end
 local function rest(t)
-  local _76_ = iremove(t, 1)
+  local _76_ = remove(t, 1)
   return _76_
 end
 local function nthrest(t, n)
   local t_2a = {}
   for i = (n + 1), length_2a(t) do
-    insert(t_2a, t[i])
+    table_insert(t_2a, t[i])
   end
   return immutable(t_2a)
 end
@@ -343,7 +343,7 @@ local function last(t)
   return t[length_2a(t)]
 end
 local function butlast(t)
-  local _77_ = iremove(t, length_2a(t))
+  local _77_ = remove(t, length_2a(t))
   return _77_
 end
 local function join(...)
@@ -359,7 +359,7 @@ local function join(...)
     local to = copy(_3ft1)
     local from = (_3ft2 or {})
     for _, v in ipairs(from) do
-      insert(to, v)
+      table_insert(to, v)
     end
     return immutable(to)
   elseif (true and true and true) then
@@ -374,7 +374,7 @@ end
 local function take(n, t)
   local t_2a = {}
   for i = 1, n do
-    insert(t_2a, t[i])
+    table_insert(t_2a, t[i])
   end
   return immutable(t_2a)
 end
@@ -406,8 +406,8 @@ local function partition(...)
         local _3ft = _85_
         local p = take(_3fn, _3ft)
         if (_3fn == length_2a(p)) then
-          insert(res, p)
-          return partition_2a(_3fn, _3fstep, {_unpack(_3ft, (_3fstep + 1))})
+          table_insert(res, p)
+          return partition_2a(_3fn, _3fstep, {table_unpack(_3ft, (_3fstep + 1))})
         else
           return nil
         end
@@ -419,10 +419,10 @@ local function partition(...)
         local _3ft = _86_
         local p = take(_3fn, _3ft)
         if (_3fn == length_2a(p)) then
-          insert(res, p)
-          return partition_2a(_3fn, _3fstep, _3fpad, {_unpack(_3ft, (_3fstep + 1))})
+          table_insert(res, p)
+          return partition_2a(_3fn, _3fstep, _3fpad, {table_unpack(_3ft, (_3fstep + 1))})
         else
-          return insert(res, take(_3fn, join(p, _3fpad)))
+          return table_insert(res, take(_3fn, join(p, _3fpad)))
         end
       else
         return nil
@@ -473,14 +473,14 @@ local function group_by(f, t)
       local _96_ = res[k]
       if (nil ~= _96_) then
         local t_2a = _96_
-        insert(t_2a, v)
+        table_insert(t_2a, v)
       elseif true then
         local _0 = _96_
         res[k] = {v}
       else
       end
     else
-      insert(ungroupped, v)
+      table_insert(ungroupped, v)
     end
   end
   local function _99_()
@@ -517,12 +517,12 @@ local itable
 local function _105_(t, f)
   local function _107_()
     local _106_ = copy(t)
-    sort(_106_, f)
+    table_sort(_106_, f)
     return _106_
   end
   return immutable(_107_())
 end
-itable = {sort = _105_, pack = ipack, unpack = iunpack, concat = iconcat, insert = iinsert, move = imove, remove = iremove, pairs = pairs, ipairs = ipairs, length = length_2a, eq = eq, deepcopy = deepcopy, assoc = assoc, ["assoc-in"] = assoc_in, update = update, ["update-in"] = update_in, keys = keys, vals = vals, ["group-by"] = group_by, frequencies = frequencies, first = first, rest = rest, nthrest = nthrest, last = last, butlast = butlast, join = join, partition = partition, take = take, drop = drop}
+itable = {sort = _105_, pack = pack, unpack = unpack, concat = concat, insert = insert, move = move, remove = remove, pairs = pairs, ipairs = ipairs, length = length_2a, eq = eq, deepcopy = deepcopy, assoc = assoc, ["assoc-in"] = assoc_in, update = update, ["update-in"] = update_in, keys = keys, vals = vals, ["group-by"] = group_by, frequencies = frequencies, first = first, rest = rest, nthrest = nthrest, last = last, butlast = butlast, join = join, partition = partition, take = take, drop = drop}
 local function _108_(_241, _242)
   return immutable(copy(_242))
 end
