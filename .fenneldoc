@@ -28,6 +28,6 @@
                                       "join" "partition" "take" "drop" "pairs" "ipairs" "length"]}
  :out-dir "./doc"
  :sandbox true
- :test-requirements {:src/itable.fnl "(require-macros :fennel-test.test)
+ :test-requirements {:src/itable.fnl "(require-macros :fennel-test)
                                       (local itable (require :init))"}
  :toc true}

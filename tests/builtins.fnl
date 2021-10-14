@@ -1,4 +1,4 @@
-(require-macros :fennel-test.test)
+(require-macros :fennel-test)
 (local {: eq &as itable} (require :init))
 
 (deftest insert-test
